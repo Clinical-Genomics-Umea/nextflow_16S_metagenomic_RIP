@@ -1,0 +1,1 @@
+/home/lindak/project/nextflow_16S_metagenomic_RIP/work/a0/22556e773466dda8ac80c6364aa8e1/blast_match_list.txt

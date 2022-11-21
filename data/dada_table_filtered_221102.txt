@@ -1,0 +1,1 @@
+/home/lindak/project/nextflow_16S_metagenomic_RIP/work/90/d92dcbd19f65d1995202315188990a/dada_table_filtered_221102.txt
