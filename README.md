@@ -5,11 +5,9 @@ Create conda env from file:
 
 Open R session and install lulu:
 
-`library("devtools")`
-
-`options(unzip = "internal")`
-
-`install_github("tobiasgf/lulu")`
+`library("devtools")
+options(unzip = "internal")
+install_github("tobiasgf/lulu")`
 
 
 Run:
