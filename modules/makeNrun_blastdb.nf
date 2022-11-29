@@ -30,13 +30,13 @@ process RUN_BLAST {
     path nsq 
     
     output:
-    path "blast_match_list.txt"
+    path match_list
 
     publishDir "/home/lindak/project/nextflow_16S_metagenomic_RIP/data/blastdb"
 
     script:
     """
-    blastn -db infile.fa -outfmt '6 qseqid sseqid pident' -out "blast_match_list.txt" -qcov_hsp_perc 80 -perc_identity 84 -query infile.fa
+    blastn -db infile.fa -outfmt '6 qseqid sseqid pident' -out match_list -qcov_hsp_perc 80 -perc_identity 84 -query infile.fa
      
     """
 

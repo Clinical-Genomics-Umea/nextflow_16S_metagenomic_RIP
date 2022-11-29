@@ -18,6 +18,5 @@ process FILTER {
     filter_table.py ${params.otu_table} "dada_table_filtered_221102.txt"
     """
     
-}
- 
+} 
 
