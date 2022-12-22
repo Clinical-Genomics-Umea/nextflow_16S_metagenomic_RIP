@@ -10,45 +10,48 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 
-indata = pd.DataFrame(pd.read_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/lulu_out_filtered_clin_noS9_221201.csv",sep=',', header=0))
-#indata = pd.DataFrame(pd.read_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/in_test.csv",sep=',', header=0))
+#indata = pd.DataFrame(pd.read_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/lulu_out_filtered_clin_noS9_221201.csv",sep=',', header=0))
+indata = pd.DataFrame(pd.read_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/in_test_2.csv",sep=',', header=0))
 indata = indata.T
 indata.columns = indata.iloc[0]
 indata = indata.drop(indata.index[0])
 
 
-# # Only cancer samples
-# ########################
-# indata = indata[indata.Cancer == 'C']
-# sample_ids = pd.DataFrame(indata.index)
 
-# # Get the truth labels
-# inlabels = indata['Stage']
-# inlabels = pd.DataFrame(inlabels, index=indata.index, copy=True)
-# inlabels = inlabels['Stage'].to_numpy()
 
-####################################################
-
-# Cancer and Normal samples
+# Only cancer samples
 ########################
+indata = indata[indata.Cancer == 'C']
 sample_ids = pd.DataFrame(indata.index)
 
 # Get the truth labels
 inlabels = indata['Stage']
 inlabels = pd.DataFrame(inlabels, index=indata.index, copy=True)
 inlabels = inlabels['Stage'].to_numpy()
-inlabels = np.array(inlabels).astype(str)
-inlabels[inlabels == 'nan'] = 'N'
-
-
+print(inlabels)
+print(indata)
 ####################################################
+
+# # Cancer and Normal samples
+# ########################
+# sample_ids = pd.DataFrame(indata.index)
+
+# # Get the truth labels
+# inlabels = indata['Stage']
+# inlabels = pd.DataFrame(inlabels, index=indata.index, copy=True)
+# inlabels = inlabels['Stage'].to_numpy()
+# inlabels = np.array(inlabels).astype(str)
+# inlabels[inlabels == 'nan'] = 'N'
+
+
+# ####################################################
 
 
 # Make numpy array
 indata = indata.drop(columns=['Cancer', 'Sex', 'Age', 'Stage'])
+#print(indata.head)
 indata = indata.to_numpy()
 data = indata.astype(np.float)
-
 
 # Make labels into ints
 label_encoder = LabelEncoder()
@@ -59,7 +62,8 @@ n_clusters = len(label_encoder.classes_)
 preprocessor = Pipeline([("scaler", MinMaxScaler()), # MinmaxScaler when can not assume norm distribution
                 ("pca", PCA(n_components=2, random_state=42))])
 
-     
+#preprocessor = Pipeline([("scaler", MinMaxScaler())])                
+
 clusterer = Pipeline([("kmeans", KMeans(
                 n_clusters=n_clusters,
                 init="k-means++",
@@ -69,15 +73,26 @@ clusterer = Pipeline([("kmeans", KMeans(
 
 pipe = Pipeline([("preprocessor", preprocessor), ("clusterer", clusterer)])
 pipe.fit(data)
-preprocessed_data = pipe["preprocessor"].transform(data)
+
+
+
+preprocessed_data = pipe["preprocessor"].transform(data) # Scales by column, to scale by row use fit_transform(data.T).T
+print(preprocessed_data)
+np.savetxt("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/test.txt", preprocessed_data)
+file = open("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/test.txt", 'w')
+file.write(str(preprocessed_data))
+file.close()
 pred_labels = pipe["clusterer"]["kmeans"].labels_
+print("Silhouette score: " , silhouette_score(preprocessed_data, pred_labels))
+print("ARI score: " , adjusted_rand_score(true_labels, pred_labels))
 
-
-## Plot
+# Plot
 pcadf = pd.DataFrame(pipe["preprocessor"].transform(data), columns=["component_1", "component_2"])
 pcadf["pred"] = pipe["clusterer"]["kmeans"].labels_
 pcadf["true"] = label_encoder.inverse_transform(true_labels)
 out_df = sample_ids.merge(pcadf, left_index=True, right_index=True)
+out_df.to_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/clusters_clin_norm_noS9_221201.csv", index=False)
+
 
 
 plt.style.use("fivethirtyeight")
@@ -96,4 +111,4 @@ scat = sns.scatterplot(
 scat.set_title("K-means clustering")
 #plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 plt.legend(loc= "upper right",bbox_to_anchor=(1, 1))
-# plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/k_means_clust_norm_noS9_221201.png", dpi=1000)
+plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/k_means_clust_norm_noS9_221201.png", dpi=1000)

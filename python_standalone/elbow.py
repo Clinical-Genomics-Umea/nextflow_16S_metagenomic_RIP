@@ -7,13 +7,13 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
 
-indata = pd.DataFrame(pd.read_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/lulu_out_filtered_clin_noU274.csv",sep=',', header=0))
+indata = pd.DataFrame(pd.read_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/data/lulu_out_filtered_clin_noS9_221201.csv",sep=',', header=0))
 indata = indata.T
 indata.columns = indata.iloc[0]
 indata = indata.drop(indata.index[0])
 indata = indata[indata.Cancer == 'C']
 # Make numpy array
-indata = indata.drop(columns=['Cancer', 'Sex', 'Age', 'Lokal', 'Stadium'])
+indata = indata.drop(columns=['Cancer', 'Sex', 'Age', 'Stage'])
 indata = indata.to_numpy()
 data = indata.astype(np.float)
 
@@ -39,5 +39,5 @@ plt.plot(range(1, 11), sse)
 plt.xticks(range(1, 11))
 plt.xlabel("Number of Clusters")
 plt.ylabel("SSE")
-#plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/elbow.png", dpi=1000)
-plt.show()   
+plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/elbow_noS9_221201.png", dpi=1000)
+ 

@@ -26,7 +26,7 @@ def make_clust_hm(infile):
     indata = indata.T
     indata.columns = indata.iloc[0]
     indata = indata.drop(indata.index[0])
-    plotdata = indata.drop(['Cancer', 'Sex', 'Age', 'Lokal', 'Stadium'])
+    plotdata = indata.drop(['Cancer', 'Sex', 'Age', 'Stage'])
     log_plotdata = plotdata.copy()    
     log_plotdata = log_plotdata.astype('float')  
     log_plotdata += 1
@@ -40,36 +40,36 @@ def make_clust_hm(infile):
     sns.set(font_scale=0.5)
     cols = (['grey'] * indata.loc['Cancer'].value_counts()['C']) + (['black'] * indata.loc['Cancer'].value_counts()['N'])
   
-    hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=False, row_cluster=True,
+    hm = sns.clustermap(log_plotdata, standard_scale=None, col_cluster=False, row_cluster=True,
                         method='ward', metric='euclidean',
                         cmap='vlag',
-                        figsize=(20, 20),
+                        figsize=(20, 30),
                         col_colors=cols,
                        )
-    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_ASV_clust.png", dpi=1000)
+    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/hm_norm_clust_ASV_noS9_NoNormASVs_221222.png", dpi=1000)
 
-    # Cluster ASVs and samples:
-    sns.set(font_scale=0.5)
-    cols = (['grey'] * indata.loc['Cancer'].value_counts()['C']) + (['black'] * indata.loc['Cancer'].value_counts()['N'])
-    hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=True,row_cluster=True,
-                        method='ward', metric='euclidean',
-                        cmap='vlag',
-                        figsize=(20, 20),
-                        col_colors=cols,
-                       )
-    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_ASV_sample_clust.png", dpi=1000)
+    # # Cluster ASVs and samples:
+    # sns.set(font_scale=0.5)
+    # cols = (['grey'] * indata.loc['Cancer'].value_counts()['C']) + (['black'] * indata.loc['Cancer'].value_counts()['N'])
+    # hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=True,row_cluster=True,
+    #                     method='ward', metric='euclidean',
+    #                     cmap='vlag',
+    #                     figsize=(20, 30),
+    #                     col_colors=cols,
+    #                    )
+    # plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_ASV_sample_clust_noS9_221201.png", dpi=1000)
 
-    # Cluster samples:
-    sns.set(font_scale=0.5)
-    cols = (['grey'] * indata.loc['Cancer'].value_counts()['C']) + (['black'] * indata.loc['Cancer'].value_counts()['N'])
-    hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=True, row_cluster=False,
-                        method='ward', metric='euclidean',
-                        cmap='vlag',
-                        figsize=(20, 20),
-                        col_colors=cols,
-                       )
+    # # Cluster samples:
+    # sns.set(font_scale=0.5)
+    # cols = (['grey'] * indata.loc['Cancer'].value_counts()['C']) + (['black'] * indata.loc['Cancer'].value_counts()['N'])
+    # hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=True, row_cluster=False,
+    #                     method='ward', metric='euclidean',
+    #                     cmap='vlag',
+    #                     figsize=(20, 30),
+    #                     col_colors=cols,
+    #                    )
 
-    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_sample_clust.png", dpi=1000)
+    # plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_sample_clust_noS9_221201.png", dpi=1000)
 
 
 def main():

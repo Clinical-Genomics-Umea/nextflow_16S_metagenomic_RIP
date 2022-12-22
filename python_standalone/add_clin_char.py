@@ -12,8 +12,8 @@ pd.set_option('display.width', 0)
 def add_clin(indata, clin_data, outfile):
     """Add clinical characteristics to filtered Lulu output"""
     lulu_data = pd.DataFrame(pd.read_csv(indata, sep=',', header=0))
-    clin_char = pd.DataFrame(pd.read_csv(clin_data, sep= '\t', header=0, dtype={'Lokal': pd.Int64Dtype(), 'Stadium': pd.Int64Dtype()}))
-    
+    clin_char = pd.DataFrame(pd.read_csv(clin_data, sep= '\t', header=0, dtype={'Stage': pd.Int64Dtype()}))
+        
     lulu_data = lulu_data.set_index("Unnamed: 0")
     clin_char = clin_char.T
     clin_char.columns =  clin_char.iloc[0]

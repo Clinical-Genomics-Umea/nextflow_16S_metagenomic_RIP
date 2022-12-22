@@ -22,56 +22,50 @@ def make_clust_hm(infile):
     indata = indata.drop(indata.index[0])
     indata = indata.reset_index()
     indata.rename(columns = {'index': 'Sample_ID'}, inplace=True)
-    indata = indata.sort_values(['Stadium', 'Sample_ID'])
+    indata = indata.sort_values(['Stage', 'Sample_ID'])
     indata = indata[indata.Cancer == 'C']
     indata = indata.T
     indata.columns = indata.iloc[0]
     indata = indata.drop(indata.index[0])
     
-    plotdata = indata.drop(['Cancer', 'Sex', 'Age', 'Lokal', 'Stadium'])
+    plotdata = indata.drop(['Cancer', 'Sex', 'Age', 'Stage'])
     log_plotdata = plotdata.copy()    
     log_plotdata = log_plotdata.astype('float')  
     log_plotdata += 1
     log_plotdata = np.log10(log_plotdata)
-    log_plotdata.to_csv("/home/lindak/project/nextflow_16S_metagenomic_RIP/python_standalone/out.csv", header=True)
-  
-     
-
-    
 
     # Create heatmap using log values with pseudo count +1
     sns.set(font_scale=0.5)
-    cols = (['yellow'] * indata.loc['Stadium'].value_counts()['1']) + (['green'] * indata.loc['Stadium'].value_counts()['2']) + \
-           (['blue'] * indata.loc['Stadium'].value_counts()['3']) + (['grey'] * indata.loc['Stadium'].value_counts()['4']) + \
-           (['black'] * indata.loc['Stadium'].value_counts()['5'])
+    cols = (['yellow'] * indata.loc['Stage'].value_counts()['1']) + (['green'] * indata.loc['Stage'].value_counts()['2']) + \
+           (['blue'] * indata.loc['Stage'].value_counts()['3']) + (['grey'] * indata.loc['Stage'].value_counts()['4']) 
 
     #Cluster ASVs:      
     hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=False, row_cluster=True,
                         method='ward', metric='euclidean',
                         cmap='vlag',
-                        figsize=(20, 20),
+                        figsize=(20, 30),
                         col_colors=cols,
                        )
-    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_ASV_clust_no_norm.png", dpi=1000)
+    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_ASV_clust_no_norm_noS9_221201.png", dpi=1000)
 
     #Cluster ASVs and samples:
     hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=True,row_cluster=True,
                         method='ward', metric='euclidean',
                         cmap='vlag',
-                        figsize=(20, 20),
+                        figsize=(20, 30),
                         col_colors=cols,
                        )
-    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_ASV_sample_clust_no_norm.png", dpi=1000)
+    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_ASV_sample_clust_no_norm_noS9_221201.png", dpi=1000)
 
     # Cluster samples:
     hm = sns.clustermap(log_plotdata, standard_scale=0, col_cluster=True, row_cluster=False,
                         method='ward', metric='euclidean',
                         cmap='vlag',
-                        figsize=(20, 20),
+                        figsize=(20, 30),
                         col_colors=cols,
                        )
 
-    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_sample_clust_no_norm.png", dpi=1000)
+    plt.savefig("/home/lindak/project/nextflow_16S_metagenomic_RIP/plots/clust_hm_sample_clust_no_norm_noS9_221201.png", dpi=1000)
 
 
 def main():
