@@ -17,7 +17,7 @@ def get_cancer_data(infile):
     return asv_table
 
 def get_normal_data(infile):
-    ''' Read normalised table and subset to get cancer samples '''
+    ''' Read normalised table and subset to get normal samples '''
     indata = pd.DataFrame(pd.read_csv(infile, sep=',', header=0))
     asv_table = indata.T 
     asv_table.columns = asv_table.iloc[0]
