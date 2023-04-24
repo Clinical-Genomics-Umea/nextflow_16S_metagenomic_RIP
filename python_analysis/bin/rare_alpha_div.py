@@ -66,6 +66,7 @@ def make_boxplot(c_group, n_group, mwu_p, out_prefix, index_type):
     n_group = n_group.rename(columns={0: 'index'})
     n_group['group'] = 'normal'
     df = pd.concat([c_group, n_group])
+    print(df)
     mwu_p = str(mwu_p.round(4))
     bx = sns.boxplot(x=df['group'], y=df['index'], palette='Blues')
     plt.text(1, 1.05 , 'p_value: ' + mwu_p, fontsize=10, horizontalalignment='right', verticalalignment='bottom', transform=plt.gca().transAxes)
