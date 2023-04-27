@@ -17,6 +17,14 @@ pandas2ri.activate()
 vegan = importr('vegan')
 
 
+'''
+Create a dissimilarity matrix with Bray-Curtis distances. Data is rarefied with vegan.avgdist() to the depth of min sum of all ASVS (iterated 100 times). 
+For each clinical variable: cancer/normal, cancer specific death, MSI/MSS, KRAS, BRAF:
+    - Principal coordinate analysis is performed and plotted
+    - A permanova test is performed
+'''
+
+
 def rare_beta(infile):
     ''' Make a rarefied (rarefaction is included in avgdist()) bray-curtis distance matrix  '''   
     indata = pd.DataFrame(pd.read_csv(infile, sep=',', header=0))
@@ -150,7 +158,7 @@ def main():
     death_info = clin_info(meta_file, 'Can_spec_death')
     run_pcoa(bray_matrix, death_info, out_prefix)
     perm_p_death, death_df = run_permanova(bray_matrix, death_info)
-    make_boxplot(death_df, perm_p_death, out_prefix, 'No_can_spec_death', 'Can_spec_death') # Är 0 = levande?
+    make_boxplot(death_df, perm_p_death, out_prefix, 'No_can_spec_death', 'Can_spec_death')
     # KRAS
     kras_info = clin_info(meta_file, 'KRAS')
     run_pcoa(bray_matrix, kras_info, out_prefix)

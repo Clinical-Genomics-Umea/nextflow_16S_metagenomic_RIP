@@ -10,6 +10,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import roc_curve, roc_auc_score
 
+'''
+For each clinical variable: cancer/normal, cancer specific death, MSI/MSS, KRAS, BRAF:
+    - Make a random forest classifier with 1000 trees, train/test sets are divided 80/20.
+    - Plot a ROC curve and the top most informative (feature importance) ASVs.
+'''
 
 def clin_info(meta_file, clin_var):
     ''' Output clin data for samples included '''
@@ -19,6 +24,7 @@ def clin_info(meta_file, clin_var):
 
 
 def make_predictions(infile, clin_var):
+    ''' Random forest classifier with 1000 trees, train/test divided 80/20 '''
     indata = pd.DataFrame(pd.read_csv(infile, sep=',', header=0))
     indata = indata.T
     indata.columns = indata.iloc[0]
@@ -51,7 +57,7 @@ def make_predictions(infile, clin_var):
 
    
 def plot_importances(feat_importance, out_prefix, clin_var):
-    ''' Plot feature importances '''
+    ''' Plot feature importances of top 20 most informative ASVs'''
     top = feat_importance.sort_values(by=0, ascending=True).tail(20)
     top.reset_index(inplace=True)
     names = top['index'].str.split('_').str[4:].apply('_'.join).str.split('.').str[0]
