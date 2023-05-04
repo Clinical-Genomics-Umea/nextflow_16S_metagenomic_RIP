@@ -76,13 +76,20 @@ def run_pcoa(beta_matrix, clin_var, out_prefix):
     plot_df.insert(0, 'Novogene_ID', dist_matrix.columns)
     plot_df = plot_df.merge(clin_var, on='Novogene_ID')
     plot_df = plot_df.drop(columns='Novogene_ID')
+ 
+    pcoa_plot_legend = {'Cancer': ['Cancer', 'Normal'], 
+                           'MSI': ['MSS', 'MSI'],
+                'Can_spec_death': ['No', 'Yes'], 
+                          'KRAS': ['KRAS-', 'KRAS+'],
+                          'BRAF': ['BRAF-', 'BRAF+']}
     group_codes = {k:idx for idx, k in enumerate(plot_df.iloc[:,2].unique())}
     colors = plot_df.iloc[:,2].apply(lambda x : group_codes[x])
     fig, ax = plt.subplots()
     scatter = ax.scatter(plot_df['PC1'], plot_df['PC2'], c=colors)
     handles = scatter.legend_elements(num=[0,1,2])[0]
     plt.subplots_adjust(right=0.8)
-    ax.legend(handles=handles, labels=group_codes.keys(), loc='right', bbox_to_anchor=(1.2, 0.9), fontsize=8)
+    labels = pcoa_plot_legend[plot_df.columns[-1]]
+    ax.legend(handles=handles, labels = labels, loc='right', bbox_to_anchor=(1.2, 0.9), fontsize=8)
     percent_pc1 = pcoa_values.proportion_explained['PC1']
     percent_pc2 = pcoa_values.proportion_explained['PC2']
     plt.xlabel('PC1 (' + str(percent_pc1.round(2)) + ') %')
@@ -90,6 +97,8 @@ def run_pcoa(beta_matrix, clin_var, out_prefix):
     plt.title(clin_var.columns[1])
     plt.savefig(str(out_prefix) + 'pcoa_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=200)
     plt.close()
+
+
 
 def run_permanova(beta_matrix, clin_var):
     ''' Run permanova test on distance matrix. Output permanova p-value and df for plotting '''
@@ -144,6 +153,7 @@ def main():
     meta_file = Path(sys.argv[2])
     out_prefix = Path(sys.argv[3])   
     bray_matrix = rare_beta(infile)
+   
     # Cancer vs normal
     cancer_info = clin_info(meta_file, 'Cancer')
     run_pcoa(bray_matrix, cancer_info, out_prefix)

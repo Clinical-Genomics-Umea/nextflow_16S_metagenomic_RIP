@@ -51,13 +51,15 @@ def make_predictions(infile, clin_var):
     feat_importance.index = pred_data.columns
     pred_prob = model.predict_proba(data_test)[:, 1]
     fpr, tpr, thresholds = roc_curve(labels_test, pred_prob, pos_label=1)
-    roc_auc = roc_auc_score(labels_test, pred_prob)
+    roc_auc = roc_auc_score(labels_test, pred_prob)  
     return fpr, tpr, roc_auc, feat_importance
     
 
    
 def plot_importances(feat_importance, out_prefix, clin_var):
     ''' Plot feature importances of top 20 most informative ASVs'''
+    feat_out = feat_importance.sort_values(by=0, ascending=False)
+    feat_out.to_csv(str(out_prefix) + '_feat_importance_' + clin_var + '_' + date.today().strftime('%y%m%d') + '.csv')
     top = feat_importance.sort_values(by=0, ascending=True).tail(20)
     top.reset_index(inplace=True)
     names = top['index'].str.split('_').str[4:].apply('_'.join).str.split('.').str[0]
