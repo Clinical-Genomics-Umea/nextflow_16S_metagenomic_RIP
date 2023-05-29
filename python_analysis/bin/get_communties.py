@@ -22,24 +22,24 @@ def make_df(infile):
     return df   
 
 
-def asv_df(df, asvs, out_prefix):
-    ''' Put ASV names in df using asvs list'''
+def id_df(df, ids, out_prefix):
+    ''' Put ID names in df using IDs list'''
     comm = df.copy()
-    reader = csv.reader(open(asvs, 'r'))
-    asvs = {}
+    reader = csv.reader(open(ids, 'r'))
+    ids = {}
     for key, value in reader:
-        asvs[key] = value
-    df.replace(asvs, inplace=True)
+        ids[key] = value
+    df.replace(ids, inplace=True)
     out = comm.apply(lambda col: col.astype (str)) + " : " + df     
     out.to_csv(str(out_prefix) + '_community_mem_names_' + date.today().strftime('%y%m%d') + '.csv', index=False)
 
 
 def main():
     infile = Path(sys.argv[1])
-    asvs = Path(sys.argv[2])
+    ids = Path(sys.argv[2])
     out_prefix = Path(sys.argv[3])   
     df = make_df(infile)
-    asv_df(df, asvs, out_prefix)
+    id_df(df, ids, out_prefix)
 
 
 if __name__ == "__main__":

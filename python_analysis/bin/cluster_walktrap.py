@@ -13,7 +13,10 @@ Put Pearson corr cutoff as sys.argv[2] and output file/figure prefix name as sys
 '''
 
 def make_adj_matrix(infile, cutoff, out_prefix):
-    ''' Make an adjacency matrix from a pearson correlation matrix and output csv with ASV names of nodes '''
+    ''' 
+    Make an adjacency matrix from a pearson correlation matrix and output csv with ASV/sample names of nodes
+    The generated adj. matrix is based on a correlation value cutoff      
+    '''
     indata = pd.DataFrame(pd.read_csv(infile, sep=',', header=0))
     indata = indata.set_index('Unnamed: 0')
     indata = indata.dropna(how='all', axis=0).dropna(how='all', axis=1)
@@ -21,12 +24,53 @@ def make_adj_matrix(infile, cutoff, out_prefix):
     adj = pd.DataFrame((np.where(indata >= float(str(cutoff)), 1, indata)))
     adj = pd.DataFrame((np.where(adj <= float(str(cutoff)), 0, adj)))
     adj.index = indata.index
+    adj.columns = indata.columns
+    adj = adj.loc[(adj!=0).any(axis=1)]
+    adj = adj.loc[:,adj.any()]
+    adj.to_csv(str(out_prefix) + '_adj_matrix_' + date.today().strftime('%y%m%d') + '.csv')   
     bacs = pd.DataFrame(adj.index)
     bacs.columns = ['ASV']
     bacs.to_csv(str(out_prefix) + '_list_' + date.today().strftime('%y%m%d') + '.csv')
     adj.reset_index(inplace=True)
     adj = adj.drop(columns='Unnamed: 0')
+    adj.columns = adj.index
     return adj
+
+
+
+def make_adj_matrix_spars(infile, out_prefix):
+    ''' 
+    Make an adjacency matrix from a pearson correlation matrix and output csv with ASV/sample names of nodes
+    The generated adj. matrix contains 1% sparsity (the 1% highest correlations)      
+    '''
+    indata = pd.DataFrame(pd.read_csv(infile, sep=',', header=0))
+    indata = indata.set_index('Unnamed: 0')
+    indata = indata.dropna(how='all', axis=0).dropna(how='all', axis=1)
+    np.fill_diagonal(indata.values, 0)
+    out = indata.to_numpy()
+    adj = out.copy()
+    print(out.size - len(out))
+    frac = (out.size - len(out)) * 0.01
+    indx = np.argwhere(np.isin(out, np.sort(out, axis=None)[-(int(frac)):])) # get indices of top 1% values
+    adj[indx[:, 0], indx[:, 1]] = 1
+    inv_indx = np.argwhere(~(np.isin(out, np.sort(out, axis=None)[-(int(frac)):]))) # get all other indices
+    adj[inv_indx[:, 0], inv_indx[:, 1]] = 0
+    adj = pd.DataFrame(adj)
+    adj.index = indata.index
+    adj.columns = indata.columns
+    print(adj.shape)
+    adj = adj.loc[(adj!=0).any(axis=1)]
+    adj = adj.loc[:,adj.any()]  
+    adj.to_csv(str(out_prefix) + '_adj_matrix_' + date.today().strftime('%y%m%d') + '.csv')   
+    bacs = pd.DataFrame(adj.index)
+    bacs.columns = ['ID']
+    bacs.to_csv(str(out_prefix) + '_list_' + date.today().strftime('%y%m%d') + '.csv')
+    adj.reset_index(inplace=True)
+    adj = adj.drop(columns='Unnamed: 0')
+    adj.columns = adj.index
+    print('Number of edges included: ' + str(int(adj.values.sum())))
+    return adj
+   
 
 
 def cluster_adj_matrix(adj_matrix, out_prefix):
@@ -71,9 +115,10 @@ def cluster_adj_matrix(adj_matrix, out_prefix):
 
 def main():
     infile = Path(sys.argv[1])
-    cutoff = Path(sys.argv[2])
-    out_prefix = Path(sys.argv[3])  
-    adj_matrix = make_adj_matrix(infile, cutoff, out_prefix)
+    #cutoff = Path(sys.argv[2])
+    out_prefix = Path(sys.argv[2])  
+    #adj_matrix = make_adj_matrix(infile, cutoff, out_prefix)
+    adj_matrix = make_adj_matrix_spars(infile, out_prefix)
     cluster_adj_matrix(adj_matrix, out_prefix)
 
 

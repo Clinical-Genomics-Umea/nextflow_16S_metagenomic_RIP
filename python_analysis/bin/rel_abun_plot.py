@@ -54,9 +54,10 @@ def group_genus(infile):
         gen_sums = gen_sums.rename(columns={'NA':'Other'})
     else:
         pass
-    
-    kept_gen_sums = gen_sums[gen_sums.columns[gen_sums.max() > 17000]] # filter out the smallest genuses
-    remove_gen_sums = gen_sums[gen_sums.columns[~(gen_sums.max() > 17000)]]
+    kept_gen_sums = gen_sums[gen_sums.columns[gen_sums.max() > 114000]] # filter out the smallest genuses
+    #kept_gen_sums = gen_sums[gen_sums.columns[gen_sums.max() > 17000]]
+    remove_gen_sums = gen_sums[gen_sums.columns[~(gen_sums.max() > 114000)]]
+    #remove_gen_sums = gen_sums[gen_sums.columns[~(gen_sums.max() > 17000)]]
     tmp = pd.DataFrame(remove_gen_sums.sum(axis=1))
     out_gen_sums = kept_gen_sums.copy()
     out_gen_sums['Other']  = kept_gen_sums['Other'] + tmp[0]

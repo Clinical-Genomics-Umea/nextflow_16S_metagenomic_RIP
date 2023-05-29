@@ -16,10 +16,13 @@ from skbio.stats.distance import DistanceMatrix
 pandas2ri.activate()
 vegan = importr('vegan')
 
+np.set_printoptions(linewidth=np.inf)
+
 
 '''
-Create a dissimilarity matrix with Bray-Curtis distances. Data is rarefied with vegan.avgdist() to the depth of min sum of all ASVS (iterated 100 times). 
-For each clinical variable: cancer/normal, cancer specific death, MSI/MSS, KRAS, BRAF:
+Create a dissimilarity matrix with Bray-Curtis distances. Data is rarefied with vegan.avgdist()
+to the depth of min sum of all ASVS (iterated 100 times). For each clinical variable:
+cancer/normal, cancer specific death, MSI/MSS, KRAS, BRAF:
     - Principal coordinate analysis is performed and plotted
     - A permanova test is performed
 '''
@@ -36,6 +39,7 @@ def rare_beta(infile):
     n_seqs = indata.sum(axis=1).min()
     r_data = pandas2ri.py2rpy(indata)
     dist = vegan.avgdist(r_data, sample = n_seqs, iterations = 100, dmethod = "bray")
+    #dist = vegan.vegdist(r_data, sample = n_seqs, dmethod = "dbray")
     
     # creating dissimilarity matrix from numpy 1D array
     a = np.tril(np.ones((side_len, side_len), dtype='int'), -1)
@@ -90,10 +94,10 @@ def run_pcoa(beta_matrix, clin_var, out_prefix):
     plt.subplots_adjust(right=0.8)
     labels = pcoa_plot_legend[plot_df.columns[-1]]
     ax.legend(handles=handles, labels = labels, loc='right', bbox_to_anchor=(1.2, 0.9), fontsize=8)
-    percent_pc1 = pcoa_values.proportion_explained['PC1']
-    percent_pc2 = pcoa_values.proportion_explained['PC2']
-    plt.xlabel('PC1 (' + str(percent_pc1.round(2)) + ') %')
-    plt.ylabel('PC2 (' + str(percent_pc2.round(2)) + ') %')
+    percent_pc1 = (pcoa_values.proportion_explained['PC1']) * 100
+    percent_pc2 = (pcoa_values.proportion_explained['PC2']) * 100
+    plt.xlabel('PC1 (' + str(percent_pc1.round(1)) + ') %')
+    plt.ylabel('PC2 (' + str(percent_pc2.round(1)) + ') %')
     plt.title(clin_var.columns[1])
     plt.savefig(str(out_prefix) + 'pcoa_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=200)
     plt.close()
@@ -118,22 +122,39 @@ def run_permanova(beta_matrix, clin_var):
     dist_matrix = dist_matrix.merge(clin_var, on='Novogene_ID')
     dist_matrix = dist_matrix.drop(columns = ['Novogene_ID'])
     groups = dist_matrix.iloc[:,-1]
-    samples = dist_matrix.columns.to_list()
-    samples = samples[0:-1]
+    samples = dist_matrix.columns.to_list()[0:-1]
     dist_matrix[dist_matrix.columns[-1]] = pd.factorize(dist_matrix[dist_matrix.columns[-1]])[0]
-    num_groups = list(dist_matrix.iloc[:,-1].unique())
-    plot_df = pd.DataFrame()
-    for group in range(len(num_groups)):
-        group_p = str(group) + '_group'
-        group_p = dist_matrix[dist_matrix.iloc[:,-1] == group]
-        group_p = group_p.drop(group_p.columns[-1], axis =1)
-        plot_df[group] = pd.concat((group_p[col] for col in group_p.columns), ignore_index=True).to_frame()
-        
+    groups_cat = pd.DataFrame(dist_matrix.iloc[:,-1])
+    groups_cat.index = samples
+    groups_cat_dict = groups_cat.groupby([groups_cat.columns[0]]).apply(lambda x: x.index.tolist()).to_dict()
     perm_matrix = dist_matrix.drop(columns = [filt]).to_numpy()
+    plot_matrix = perm_matrix.copy()
+    plot_matrix = np.triu(plot_matrix, 1)
+    plot_matrix[np.tril_indices(plot_matrix.shape[0])] = np.nan
+    plot_matrix = pd.DataFrame(plot_matrix)
+    plot_matrix.columns = samples
+    plot_matrix.index = samples
+ 
+    plot_df = pd.DataFrame()
+    for key in range(2):
+        group_dists = []
+        sample_group = groups_cat_dict.get(key)
+        for row_name in sample_group:
+            for col_name in sample_group:
+               group_dists.append(plot_matrix.loc[row_name][col_name])
+
+        clean_group_dist = []
+        for dist in group_dists:
+            if str(dist) != 'nan':
+                clean_group_dist.append(dist)
+        clean_group_dist = pd.DataFrame(clean_group_dist)
+        clean_group_dist.columns = [key]
+        plot_df = pd.concat([plot_df, clean_group_dist], axis=1)
+                    
     perm_matrix = perm_matrix.copy(order='C')
     dm = DistanceMatrix(perm_matrix, ids=samples)
     perm = permanova(dm, grouping=groups, permutations=999)
-    return perm['p-value'], plot_df     
+    return perm['p-value'], plot_df 
 
 
 def make_boxplot(plot_df, perm_p, out_prefix, name_0, name_1):
@@ -154,7 +175,7 @@ def main():
     out_prefix = Path(sys.argv[3])   
     bray_matrix = rare_beta(infile)
    
-    # Cancer vs normal
+    ## Cancer vs normal
     cancer_info = clin_info(meta_file, 'Cancer')
     run_pcoa(bray_matrix, cancer_info, out_prefix)
     perm_p_cancer, cancer_df = run_permanova(bray_matrix, cancer_info)

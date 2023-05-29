@@ -13,7 +13,6 @@ def rel_abundance(infile, outfile):
     sample_ids = pd.DataFrame(indata.index)
     clin = indata[['Age', 'Sex', 'Stage', 'Cancer']]
     indata = indata.drop(columns=['Age', 'Sex', 'Stage', 'Cancer'])
-    
     asv_names = indata.columns   
     rel_data = indata.T.astype(float)
     rel_data = rel_data.div(rel_data.sum(axis=0), axis=1)

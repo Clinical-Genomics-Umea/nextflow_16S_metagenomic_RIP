@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import date
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
-import numpy as np
+#import numpy as np
 
 pandas2ri.activate()
 fisher = robjects.r['fisher.test']
@@ -15,7 +15,7 @@ def clin_var(infile1, infile2):
     metadata = pd.DataFrame(pd.read_csv(infile1, sep=',', header=0))
     memlist = pd.DataFrame(pd.read_csv(infile2, sep=',', header=0))
     memlist = memlist.drop(columns= 'Unnamed: 0')
-    memlist = memlist.rename(columns={'ASV': 'Novogene_ID'})
+    memlist = memlist.rename(columns={'ID': 'Novogene_ID'})
     clin_out = metadata.merge(memlist, on='Novogene_ID')
     print(clin_out)
     return clin_out
@@ -72,7 +72,6 @@ def comm_mem(infile3, clin_out, out_prefix):
     comm_out.columns = ['clin_var']
     comm_out[['clin_var', 'community', 'real', 'prob', 'fisher_p']] = comm_out['clin_var'].str.split('\s(?![^\[\]]*\])', expand=True)
     comm_out.to_csv(str(out_prefix) + '_fisher_communities_' + date.today().strftime('%y%m%d') + '.csv', index=False)
-    
 
 
 def main():
@@ -81,8 +80,8 @@ def main():
     comm_file = Path(sys.argv[3])
     out_prefix = Path(sys.argv[4])
     clin_info = clin_var(clin_file, list_file)
-    comm_info = comm_mem(comm_file, clin_info, out_prefix)
+    comm_mem(comm_file, clin_info, out_prefix)
 
 
 if __name__ == "__main__":
-    main() 
+    main()

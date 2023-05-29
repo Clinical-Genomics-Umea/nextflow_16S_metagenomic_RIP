@@ -14,7 +14,7 @@ def get_counts(infile, comm_file):
     indata = pd.DataFrame(pd.read_csv(infile, sep=',', header=0))
     communities = pd.DataFrame(pd.read_csv(comm_file, sep=',', header=0))
     indata.set_index('Unnamed: 0', inplace=True)
-    micra = indata.loc['Bacteria_Firmicutes_Clostridia_Peptostreptococcales-Tissierellales_Family_XI_Parvimonas_micra.1']
+    micra = indata.loc['Bacteria_Firmicutes_Clostridia_Peptostreptococcales-Tissierellales_Family-XI_Parvimonas_micra.1']
     asv_dict = dict(zip(micra.index, micra.values))
     tmp = [communities[col].str.split(':', expand=True) for col in communities.columns]
     tmp = pd.concat(tmp, axis=1).drop(columns=[0])
