@@ -85,7 +85,8 @@ def run_pcoa(beta_matrix, clin_var, out_prefix):
                            'MSI': ['MSS', 'MSI'],
                 'Can_spec_death': ['No', 'Yes'], 
                           'KRAS': ['KRAS-', 'KRAS+'],
-                          'BRAF': ['BRAF-', 'BRAF+']}
+                          'BRAF': ['BRAF-', 'BRAF+'],
+                    'Local_3grp': ['1', '2', '3']}
     group_codes = {k:idx for idx, k in enumerate(plot_df.iloc[:,2].unique())}
     colors = plot_df.iloc[:,2].apply(lambda x : group_codes[x])
     fig, ax = plt.subplots()
@@ -100,6 +101,7 @@ def run_pcoa(beta_matrix, clin_var, out_prefix):
     plt.ylabel('PC2 (' + str(percent_pc2.round(1)) + ') %')
     plt.title(clin_var.columns[1])
     plt.savefig(str(out_prefix) + 'pcoa_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=200)
+    #plt.show()
     plt.close()
 
 
@@ -123,7 +125,12 @@ def run_permanova(beta_matrix, clin_var):
     dist_matrix = dist_matrix.drop(columns = ['Novogene_ID'])
     groups = dist_matrix.iloc[:,-1]
     samples = dist_matrix.columns.to_list()[0:-1]
-    dist_matrix[dist_matrix.columns[-1]] = pd.factorize(dist_matrix[dist_matrix.columns[-1]])[0]
+    
+    if dist_matrix.columns[-1] != 'Local_3grp':
+        dist_matrix[dist_matrix.columns[-1]] = pd.factorize(dist_matrix[dist_matrix.columns[-1]])[0]
+    elif dist_matrix.columns[-1] == 'Local_3grp':
+        dist_matrix.iloc[:, -1] = dist_matrix.iloc[:, -1].astype('int')
+      
     groups_cat = pd.DataFrame(dist_matrix.iloc[:,-1])
     groups_cat.index = samples
     groups_cat_dict = groups_cat.groupby([groups_cat.columns[0]]).apply(lambda x: x.index.tolist()).to_dict()
@@ -134,9 +141,9 @@ def run_permanova(beta_matrix, clin_var):
     plot_matrix = pd.DataFrame(plot_matrix)
     plot_matrix.columns = samples
     plot_matrix.index = samples
- 
+    
     plot_df = pd.DataFrame()
-    for key in range(2):
+    for key in groups_cat_dict.keys():
         group_dists = []
         sample_group = groups_cat_dict.get(key)
         for row_name in sample_group:
@@ -149,23 +156,23 @@ def run_permanova(beta_matrix, clin_var):
                 clean_group_dist.append(dist)
         clean_group_dist = pd.DataFrame(clean_group_dist)
         clean_group_dist.columns = [key]
-        plot_df = pd.concat([plot_df, clean_group_dist], axis=1)
-                    
+        plot_df = pd.concat([plot_df, clean_group_dist], axis=1)           
     perm_matrix = perm_matrix.copy(order='C')
     dm = DistanceMatrix(perm_matrix, ids=samples)
     perm = permanova(dm, grouping=groups, permutations=999)
     return perm['p-value'], plot_df 
 
 
-def make_boxplot(plot_df, perm_p, out_prefix, name_0, name_1):
-    ''' Make boxplot for dissimilarity matrix values showing p-value from permanova '''
-    plot_df = plot_df.rename(columns={0: name_0, 1: name_1})
+def make_boxplot(plot_df, perm_p, out_prefix, name_list, clin_var):
+    ''' Make boxplot for beta diversity values showing p-value from permanova '''
+    plot_df.columns = name_list
     perm_p = str(perm_p.round(4))
     bx = sns.boxplot(data=plot_df, palette='Blues')
     plt.ylabel('Rarefied Bray-Curtis distance')
     plt.text(1, 1.05 , 'p_value: ' + perm_p, fontsize=10, horizontalalignment='right', verticalalignment='bottom', transform=plt.gca().transAxes)
     #plt.title('')
-    plt.savefig(str(out_prefix) + 'boxplot_' + name_0 + '_' + name_1 + '_' + date.today().strftime('%y%m%d') + '.png', dpi=200)
+    plt.savefig(str(out_prefix) + 'boxplot_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=200)
+    #plt.show()
     plt.close()
 
 
@@ -179,27 +186,32 @@ def main():
     cancer_info = clin_info(meta_file, 'Cancer')
     run_pcoa(bray_matrix, cancer_info, out_prefix)
     perm_p_cancer, cancer_df = run_permanova(bray_matrix, cancer_info)
-    make_boxplot(cancer_df, perm_p_cancer, out_prefix, 'Cancer', 'Normal')
+    make_boxplot(cancer_df, perm_p_cancer, out_prefix, ['Cancer', 'Normal'], cancer_info)
+    # Local_3grp
+    local_info = clin_info(meta_file, 'Local_3grp')
+    run_pcoa(bray_matrix, local_info, out_prefix)
+    perm_p_local, local_df = run_permanova(bray_matrix, local_info)
+    make_boxplot(local_df, perm_p_local, out_prefix, ['1', '2', '3'], local_info)
     # MSI vs MSS
     msi_info = clin_info(meta_file, 'MSI')
     run_pcoa(bray_matrix, msi_info, out_prefix)
     perm_p_msi, msi_df = run_permanova(bray_matrix, msi_info)
-    make_boxplot(msi_df, perm_p_msi, out_prefix, 'MSS', 'MSI')
+    make_boxplot(msi_df, perm_p_msi, out_prefix, ['MSS', 'MSI'], msi_info)
     # Cancer specific death
     death_info = clin_info(meta_file, 'Can_spec_death')
     run_pcoa(bray_matrix, death_info, out_prefix)
     perm_p_death, death_df = run_permanova(bray_matrix, death_info)
-    make_boxplot(death_df, perm_p_death, out_prefix, 'No_can_spec_death', 'Can_spec_death')
+    make_boxplot(death_df, perm_p_death, out_prefix, ['No_can_spec_death', 'Can_spec_death'], death_info)
     # KRAS
     kras_info = clin_info(meta_file, 'KRAS')
     run_pcoa(bray_matrix, kras_info, out_prefix)
     perm_p_kras, kras_df = run_permanova(bray_matrix, kras_info)
-    make_boxplot(kras_df, perm_p_kras, out_prefix, 'KRAS-', 'KRAS+')
+    make_boxplot(kras_df, perm_p_kras, out_prefix, ['KRAS-', 'KRAS+'], kras_info)
     # BRAF
     braf_info = clin_info(meta_file, 'BRAF')
     run_pcoa(bray_matrix, braf_info, out_prefix)
     perm_p_braf, braf_df = run_permanova(bray_matrix, braf_info)
-    make_boxplot(braf_df, perm_p_braf, out_prefix, 'BRAF-', 'BRAF+')
+    make_boxplot(braf_df, perm_p_braf, out_prefix, ['BRAF-', 'BRAF+'], braf_info)
     
 
 if __name__ == "__main__":
