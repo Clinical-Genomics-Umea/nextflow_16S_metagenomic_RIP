@@ -29,6 +29,7 @@ def group_phylum(infile):
     phyl_sums = phyl_sums.T
     phyl_sums = phyl_sums.loc[:,(phyl_sums.columns!='Age') & (phyl_sums.columns!='Stage') & (phyl_sums.columns!='Sex')].groupby('Cancer').sum()
     rel_phyl = phyl_sums.T.div(phyl_sums.sum(axis=1), axis=1)
+    print(rel_phyl.T)
     return rel_phyl.T
 
 
@@ -54,10 +55,8 @@ def group_genus(infile):
         gen_sums = gen_sums.rename(columns={'NA':'Other'})
     else:
         pass
-    kept_gen_sums = gen_sums[gen_sums.columns[gen_sums.max() > 114000]] # filter out the smallest genuses
-    #kept_gen_sums = gen_sums[gen_sums.columns[gen_sums.max() > 17000]]
+    kept_gen_sums = gen_sums[gen_sums.columns[gen_sums.max() > 114000]] # filter out the smallest genuses since they will not be visible in plot, hence remove from legend 
     remove_gen_sums = gen_sums[gen_sums.columns[~(gen_sums.max() > 114000)]]
-    #remove_gen_sums = gen_sums[gen_sums.columns[~(gen_sums.max() > 17000)]]
     tmp = pd.DataFrame(remove_gen_sums.sum(axis=1))
     out_gen_sums = kept_gen_sums.copy()
     out_gen_sums['Other']  = kept_gen_sums['Other'] + tmp[0]
@@ -70,7 +69,7 @@ def group_genus(infile):
 def make_barplot(sums, type, out_prefix):
     ''' Make a stacked barplot '''
     sums.rename(index={'C': 'Cancer', 'N': 'Normal'}, inplace=True)
-    #my_colors = ListedColormap(sns.color_palette('Set2'))
+    print(sums)
     my_colors = ListedColormap(sns.color_palette(cc.glasbey, n_colors=100))
     bars = sums.plot(kind='bar', stacked=True, title = 'By ' + type, colormap=my_colors)
     plt.xticks(rotation=0)
@@ -78,7 +77,7 @@ def make_barplot(sums, type, out_prefix):
     plt.subplots_adjust(right=0.6) # make space to the right of figure to place legend
     bars.legend(loc='center', bbox_to_anchor=(1.45, 0.5), fontsize=4 , ncol=2)
     plt.savefig(str(out_prefix) + type + date.today().strftime('%y%m%d') + '.png', dpi=200)
-    #plt.show()
+    plt.show()
     plt.close()
     
 
