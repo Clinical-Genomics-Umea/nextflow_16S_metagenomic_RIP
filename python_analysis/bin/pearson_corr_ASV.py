@@ -28,7 +28,7 @@ def get_normal_data(infile):
 
 
 def calc_corr_cancer(asv_table, out_prefix):
-    ''' Takes a table of floats, calculates Pearson correlation and writes the upper triangle to a csv '''
+    ''' Takes a table of floats, calculates Pearson correlation and writes the upper triangle and lower+upper to csv's '''
     print(asv_table.shape)
     p_corr = asv_table.corr()
     p_corr.index.name = None
@@ -38,7 +38,7 @@ def calc_corr_cancer(asv_table, out_prefix):
     return p_corr
 
 def calc_corr_normal(asv_table, out_prefix):
-    ''' Takes a table of floats, calculates Pearson correlation and writes the upper triangle to a csv '''
+    ''' Takes a table of floats, calculates Pearson correlation and writes the upper triangle and lower+upper to csv's '''
     print(asv_table.shape)
     p_corr = asv_table.corr()
     p_corr.index.name = None
