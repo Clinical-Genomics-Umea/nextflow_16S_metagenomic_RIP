@@ -29,7 +29,6 @@ def group_phylum(infile):
     phyl_sums = phyl_sums.T
     phyl_sums = phyl_sums.loc[:,(phyl_sums.columns!='Age') & (phyl_sums.columns!='Stage') & (phyl_sums.columns!='Sex')].groupby('Cancer').sum()
     rel_phyl = phyl_sums.T.div(phyl_sums.sum(axis=1), axis=1)
-    print(rel_phyl.T)
     return rel_phyl.T
 
 
@@ -69,14 +68,13 @@ def group_genus(infile):
 def make_barplot(sums, type, out_prefix):
     ''' Make a stacked barplot '''
     sums.rename(index={'C': 'Cancer', 'N': 'Normal'}, inplace=True)
-    print(sums)
     my_colors = ListedColormap(sns.color_palette(cc.glasbey, n_colors=100))
     bars = sums.plot(kind='bar', stacked=True, title = 'By ' + type, colormap=my_colors)
     plt.xticks(rotation=0)
     bars.set(xlabel=None)
     plt.subplots_adjust(right=0.6) # make space to the right of figure to place legend
-    bars.legend(loc='center', bbox_to_anchor=(1.45, 0.5), fontsize=4 , ncol=2)
-    plt.savefig(str(out_prefix) + type + date.today().strftime('%y%m%d') + '.png', dpi=200)
+    bars.legend(loc='center', bbox_to_anchor=(1.3, 0.5), fontsize=5 , ncol=1)
+    plt.savefig(str(out_prefix) + type + date.today().strftime('%y%m%d') + '.png', dpi=400)
     plt.show()
     plt.close()
     

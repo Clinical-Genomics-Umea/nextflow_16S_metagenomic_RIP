@@ -118,7 +118,7 @@ def run_permanova(beta_matrix, clin_var):
     return perm['p-value'], plot_df 
 
 
-def run_pcoa(beta_matrix, clin_var, perm_p, out_prefix):
+def run_pcoa(beta_matrix, clin_var, perm_p, out_prefix, plot_title):
     ''' Calculate principal coordinates and plot, including p-value from permanova '''
     dist_matrix = beta_matrix.copy()
     dist_matrix.insert(0, 'Novogene_ID', dist_matrix.columns)
@@ -141,10 +141,10 @@ def run_pcoa(beta_matrix, clin_var, perm_p, out_prefix):
     pcoa_plot_legend = {'Cancer': ['Cancer', 'Normal'], 
                            'MSI': ['MSS', 'MSI'],
                 'Can_spec_death': ['No', 'Yes'], 
-                          'KRAS': ['KRAS-', 'KRAS+'],
-                          'BRAF': ['BRAF-', 'BRAF+'],
-                    'Local_3grp': ['right col', 'left col', 'rectum'],
-                         'Stage': ['1', '2', '3', '4', '9']}
+                          'KRAS': ['wildtype', 'mutated'],
+                          'BRAF': ['wildtype', 'mutated'],
+                    'Local_3grp': ['Right colon', 'Left colon', 'Rectum'],
+                         'Stage': ['I', 'II', 'III', 'IV', 'unknown']}
     group_codes = {k:idx for idx, k in enumerate(plot_df.iloc[:,2].unique())}
     colors = plot_df.iloc[:,2].apply(lambda x : group_codes[x])
     fig, ax = plt.subplots()
@@ -159,23 +159,21 @@ def run_pcoa(beta_matrix, clin_var, perm_p, out_prefix):
     plt.xlabel('PC1 (' + str(percent_pc1.round(1)) + ') %')
     plt.ylabel('PC2 (' + str(percent_pc2.round(1)) + ') %')
     plt.text(1, 1.05 , 'p_value: ' + perm_p, fontsize=10, horizontalalignment='right', verticalalignment='bottom', transform=plt.gca().transAxes)
-    plt.title(clin_var.columns[1])
-    plt.savefig(str(out_prefix) + 'pcoa_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=200)
-    plt.show()
+    plt.title(plot_title, fontsize=20)
+    plt.savefig(str(out_prefix) + 'pcoa_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=800)
+    #plt.show()
     plt.close()
 
 
 
-def make_boxplot(plot_df, out_prefix, name_list, clin_var):
+def make_boxplot(plot_df, out_prefix, name_list, clin_var, plot_title):
     ''' Make boxplot for beta diversity values '''
     plot_df.columns = name_list
-    #perm_p = str(perm_p.round(4))
     bx = sns.boxplot(data=plot_df, palette='Blues')
     plt.ylabel('Rarefied Bray-Curtis distance')
-    #plt.text(1, 1.05 , 'p_value: ' + perm_p, fontsize=10, horizontalalignment='right', verticalalignment='bottom', transform=plt.gca().transAxes)
-    plt.title('')
-    plt.savefig(str(out_prefix) + 'boxplot_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=200)
-    plt.show()
+    plt.title(plot_title, fontsize=20)
+    plt.savefig(str(out_prefix) + 'boxplot_' + clin_var.columns[1] + '_' + date.today().strftime('%y%m%d') + '.png', dpi=400)
+    #plt.show()
     plt.close()
 
 
@@ -188,38 +186,38 @@ def main():
     # Cancer vs normal
     cancer_info = clin_info(meta_file, 'Cancer')
     perm_p_cancer, cancer_df = run_permanova(bray_matrix, cancer_info)
-    run_pcoa(bray_matrix, cancer_info, perm_p_cancer, out_prefix)
-    make_boxplot(cancer_df, out_prefix, ['Cancer', 'Normal'], cancer_info)
+    run_pcoa(bray_matrix, cancer_info, perm_p_cancer, out_prefix, 'Cancer')
+    make_boxplot(cancer_df, out_prefix, ['Cancer', 'Normal'], cancer_info, 'Cancer')
     # Local_3grp
     local_info = clin_info(meta_file, 'Local_3grp')
     perm_p_local, local_df = run_permanova(bray_matrix, local_info)
-    run_pcoa(bray_matrix, local_info, perm_p_local, out_prefix)
-    make_boxplot(local_df, out_prefix, ['right col', 'left col', 'rectum'], local_info)
+    run_pcoa(bray_matrix, local_info, perm_p_local, out_prefix, 'Localisation')
+    make_boxplot(local_df, out_prefix, ['Right colon', 'Left colon', 'Rectum'], local_info, 'Localisation')
     # Stage
     stage_info = clin_info(meta_file, 'Stage')
     perm_p_stage, stage_df = run_permanova(bray_matrix, stage_info)
-    run_pcoa(bray_matrix, stage_info, perm_p_stage, out_prefix)
-    make_boxplot(stage_df, out_prefix, ['1', '2', '3', '4'], stage_info)
+    run_pcoa(bray_matrix, stage_info, perm_p_stage, out_prefix, 'Stage')
+    make_boxplot(stage_df, out_prefix, ['Stage I', 'Stage II', 'Stage III', 'Stage IV'], stage_info, 'Stage')
     # MSI vs MSS
     msi_info = clin_info(meta_file, 'MSI')
     perm_p_msi, msi_df = run_permanova(bray_matrix, msi_info)
-    run_pcoa(bray_matrix, msi_info, perm_p_msi, out_prefix)
-    make_boxplot(msi_df, out_prefix, ['MSS', 'MSI'], msi_info)
+    run_pcoa(bray_matrix, msi_info, perm_p_msi, out_prefix, 'MSI')
+    make_boxplot(msi_df, out_prefix, ['MSS', 'MSI'], msi_info, 'MSI')
     # Cancer specific death
     death_info = clin_info(meta_file, 'Can_spec_death')
     perm_p_death, death_df = run_permanova(bray_matrix, death_info)
-    run_pcoa(bray_matrix, death_info, perm_p_death, out_prefix)
-    make_boxplot(death_df, out_prefix, ['No_can_spec_death', 'Can_spec_death'], death_info)
+    run_pcoa(bray_matrix, death_info, perm_p_death, out_prefix, 'Cancer specific death')
+    make_boxplot(death_df, out_prefix, ['No_can_spec_death', 'Can_spec_death'], death_info, 'Cancer specific death')
     # KRAS
     kras_info = clin_info(meta_file, 'KRAS')
     perm_p_kras, kras_df = run_permanova(bray_matrix, kras_info)
-    run_pcoa(bray_matrix, kras_info, perm_p_kras, out_prefix)
-    make_boxplot(kras_df,  out_prefix, ['KRAS-', 'KRAS+'], kras_info)
+    run_pcoa(bray_matrix, kras_info, perm_p_kras, out_prefix, 'KRAS status') 
+    make_boxplot(kras_df,  out_prefix, ['Wildtype', 'Mutated'], kras_info, 'KRAS status')
     # BRAF
     braf_info = clin_info(meta_file, 'BRAF')
     perm_p_braf, braf_df = run_permanova(bray_matrix, braf_info)
-    run_pcoa(bray_matrix, braf_info, perm_p_braf, out_prefix)
-    make_boxplot(braf_df, out_prefix, ['BRAF-', 'BRAF+'], braf_info)
+    run_pcoa(bray_matrix, braf_info, perm_p_braf, out_prefix, 'BRAF status')
+    make_boxplot(braf_df, out_prefix, ['Wildtype', 'Mutated'], braf_info, 'BRAF status')
     
 
 if __name__ == "__main__":
