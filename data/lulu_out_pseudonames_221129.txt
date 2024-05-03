@@ -1,1 +1,0 @@
-/home/lindak/project/nextflow_16S_metagenomic_RIP/work/93/f6f54f8565a2fc7c5f99607d5a0758/lulu_out_221129.txt

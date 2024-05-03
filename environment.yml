@@ -1,6 +1,0 @@
-channels:
-  - conda-forge  
-dependencies:
-  - r-base==3.3.2
-  - r-devtools
-
