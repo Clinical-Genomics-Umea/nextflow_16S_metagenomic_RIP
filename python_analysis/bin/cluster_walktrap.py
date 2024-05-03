@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import date
 import igraph as ig
 import matplotlib.pyplot as plt
+import random
 
 
 '''
@@ -16,7 +17,7 @@ Sparsity cut off is 0.5%
 def make_adj_matrix_spars(infile, out_prefix):
     ''' 
     Make an adjacency matrix from a pearson correlation matrix and output csv with ASV/sample names of nodes
-    The generated adj. matrix contains 1% sparsity (the 1% highest correlations)      
+    The generated adj. matrix contains 0.5% sparsity (the 0.5% highest correlations)      
     '''
     indata = pd.DataFrame(pd.read_csv(infile, sep=',', header=0))
     indata = indata.set_index('Unnamed: 0')
@@ -50,6 +51,7 @@ def make_adj_matrix_spars(infile, out_prefix):
 
 def cluster_adj_matrix(adj_matrix, out_prefix):
     ''' Cluster adjacency matrix and print .png'''
+    random.seed(1111)
     graph = ig.Graph.Adjacency(adj_matrix, mode='undirected') # Make graph from adjacency matrix
     v_dendro = ig.Graph.community_walktrap(graph) # Create vertex dendrogram
     communities =  v_dendro.as_clustering() # Convert into VertexClustering for plotting
@@ -82,7 +84,8 @@ def cluster_adj_matrix(adj_matrix, out_prefix):
         mark_groups=True,
         palette=palette1,
         vertex_size=0.1,
-        edge_width=0.5
+        vertex_label_size=15,
+        edge_width=1
     )
     fig1.set_size_inches(20, 20)
     fig1.savefig(str(out_prefix) + '_' + date.today().strftime('%y%m%d') + '.png', dpi=100)

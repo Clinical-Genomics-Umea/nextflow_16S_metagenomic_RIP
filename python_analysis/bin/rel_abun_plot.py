@@ -69,12 +69,13 @@ def make_barplot(sums, type, out_prefix):
     ''' Make a stacked barplot '''
     sums.rename(index={'C': 'Cancer', 'N': 'Normal'}, inplace=True)
     my_colors = ListedColormap(sns.color_palette(cc.glasbey, n_colors=100))
-    bars = sums.plot(kind='bar', stacked=True, title = 'By ' + type, colormap=my_colors)
+    bars = sums.plot(kind='bar', stacked=True, title = 'By ' + type, colormap=my_colors, figsize=(7.5,4.8))
     plt.xticks(rotation=0)
     bars.set(xlabel=None)
-    plt.subplots_adjust(right=0.6) # make space to the right of figure to place legend
-    bars.legend(loc='center', bbox_to_anchor=(1.3, 0.5), fontsize=5 , ncol=1)
-    plt.savefig(str(out_prefix) + type + date.today().strftime('%y%m%d') + '.png', dpi=400)
+    plt.subplots_adjust(right=0.58) # make space to the right of figure to place legend
+    #bars.legend(loc='center', bbox_to_anchor=(1.3, 0.5), fontsize=5 , ncol=1)
+    bars.legend(loc='center', bbox_to_anchor=(1.45, 0.5), fontsize=5 , ncol=2)
+    plt.savefig(str(out_prefix) + type + date.today().strftime('%y%m%d') + '.png', dpi=800)
     plt.show()
     plt.close()
     
@@ -84,8 +85,8 @@ def main():
     infile = Path(sys.argv[1])
     out_prefix = Path(sys.argv[2])
     # Phylum
-    phyl_sums = group_phylum(infile)
-    make_barplot(phyl_sums, '_phylum_', out_prefix)
+    #phyl_sums = group_phylum(infile)
+    #make_barplot(phyl_sums, '_phylum_', out_prefix)
     # Genus
     genus_sums = group_genus(infile)
     make_barplot(genus_sums, '_genus_', out_prefix)

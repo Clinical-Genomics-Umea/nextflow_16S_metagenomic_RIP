@@ -1,0 +1,1 @@
+/home/lindak/project/nextflow_16S_metagenomic_RIP/work/d7/30efe448fed12321c75ac0f5a6a1cb/lulu_out_pseudonames_230704.txt
